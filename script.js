@@ -35,7 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Update the cameraState object whenever the view changes
-    viewer.on('viewchange', () => {
+    viewer.on('mouseup', () => {
+        getCameraState();
+        updateUI();
+    });
+    viewer.on('touchend', () => {
         getCameraState();
         updateUI();
     });
