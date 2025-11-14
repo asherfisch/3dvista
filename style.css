@@ -1,13 +1,13 @@
-body {
-    font-family: sans-serif;
+body, html {
     margin: 0;
-    height: 100vh;
-    overflow: hidden; /* Prevent body scrolling */
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
 }
 
-#app-container {
+#container {
     display: flex;
-    width: 100vw;
     height: 100vh;
 }
 
@@ -19,54 +19,48 @@ body {
 #sidebar {
     width: 25vw;
     height: 100vh;
+    box-sizing: border-box;
     padding: 20px;
-    box-sizing: border-box; /* Include padding in width/height */
-    border-left: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto; /* Allow sidebar to scroll if content overflows */
+    overflow-y: auto;
+    background-color: #f0f0f0;
 }
 
-#sequence-management, #keyframe-management, #io-controls {
-    margin-bottom: 20px;
-}
-
-#keyframe-properties {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.keyframe-property {
-    display: flex;
-    flex-direction: column;
-    width: 48%; /* Adjust width to fit side-by-side */
-}
-
-#add-keyframe-to-sequence {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-}
-
-#sequence-list, #keyframe-list {
-    border: 1px solid #eee;
-    padding: 10px;
-    min-height: 50px;
-    background-color: #f9f9f9;
-}
-
-h2 {
+#sidebar h1, #sidebar h2 {
     margin-top: 0;
 }
 
-input[type="text"], input[type="number"], select, button {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    box-sizing: border-box;
+#sequences-container, #keyframes-container {
+    margin-bottom: 20px;
 }
 
-#io-controls {
-    margin-top: auto; /* Push to the bottom */
+.sequence-item {
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    background-color: #fff;
+}
+
+.sequence-item.selected {
+    background-color: #d0e3ff;
+}
+
+#new-sequence-name {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
 }

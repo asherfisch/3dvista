@@ -1,68 +1,142 @@
-// Pannellum viewer instance
-let viewer;
+document.addEventListener('DOMContentLoaded', () => {
+    const panoramaContainer = document.getElementById('panorama');
 
-// Camera state object
-const cameraState = {
-    yaw: 0,
-    pitch: 0,
-    hfov: 100
-};
-
-// Sequences array
-let sequences = [];
-let currentSequence = null;
-
-// Function to get the current camera state from the Pannellum viewer
-function getCameraState() {
-    cameraState.yaw = viewer.getYaw();
-    cameraState.pitch = viewer.getPitch();
-    cameraState.hfov = viewer.getHfov();
-}
-
-// Function to set the Pannellum viewer's camera state from an object
-function setCameraState(state) {
-    viewer.lookAt(state.pitch, state.yaw, state.hfov, 0);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    // Initialize Pannellum viewer
-    viewer = pannellum.viewer('panorama', {
+    // Initialize Pannellum Viewer
+    const viewer = pannellum.viewer('panorama', {
         "type": "equirectangular",
         "panorama": "https://pannellum.org/images/alma.jpg",
         "autoLoad": true,
-        "compass": true,
-        "autoRotate": -2
+        "compass": false,
+        "northOffset": 240,
+        "showControls": false
     });
 
-    // Update the cameraState object whenever the view changes
-    viewer.on('mouseup', getCameraState);
-    viewer.on('touchend', getCameraState);
+    let sequences = {};
+    let currentSequenceName = null;
 
-    // Event listener for adding a keyframe to the current sequence
-    document.getElementById('add-keyframe-to-sequence').addEventListener('click', () => {
-        if (currentSequence !== null) {
-            // Explicitly get the latest camera state right before creating the keyframe
-            getCameraState();
-            const duration = parseFloat(document.getElementById('keyframe-duration').value);
-            const ease = document.getElementById('keyframe-ease').value;
-            sequences[currentSequence].keyframes.push({ ...cameraState, duration, ease });
+    // --- DOM Elements ---
+    const newSequenceNameInput = document.getElementById('new-sequence-name');
+    const addSequenceBtn = document.getElementById('add-sequence-btn');
+    const sequencesList = document.getElementById('sequences-list');
+    const keyframesContainer = document.getElementById('keyframes-container');
+    const currentSequenceTitle = document.getElementById('current-sequence-title');
+    const keyframesList = document.getElementById('keyframes-list');
+    const addKeyframeBtn = document.getElementById('add-keyframe-btn');
+    const playSequenceBtn = document.getElementById('play-sequence-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const importBtn = document.getElementById('import-btn');
+    const importFileInput = document.getElementById('import-file');
+
+    // --- Functions ---
+    const renderSequences = () => {
+        sequencesList.innerHTML = '';
+        for (const name in sequences) {
+            const seqEl = document.createElement('div');
+            seqEl.textContent = name;
+            seqEl.className = 'sequence-item';
+            if (name === currentSequenceName) {
+                seqEl.classList.add('selected');
+            }
+            seqEl.addEventListener('click', () => {
+                currentSequenceName = name;
+                renderSequences();
+                renderKeyframes();
+                keyframesContainer.style.display = 'block';
+                currentSequenceTitle.textContent = `Keyframes for: ${name}`;
+            });
+            sequencesList.appendChild(seqEl);
+        }
+    };
+
+    const renderKeyframes = () => {
+        keyframesList.innerHTML = '';
+        if (currentSequenceName && sequences[currentSequenceName]) {
+            sequences[currentSequenceName].keyframes.forEach((kf, index) => {
+                const kfEl = document.createElement('div');
+                kfEl.textContent = `Keyframe ${index + 1}: Yaw=${kf.yaw.toFixed(2)}, Pitch=${kf.pitch.toFixed(2)}, Zoom=${kf.hfov.toFixed(2)}`;
+                keyframesList.appendChild(kfEl);
+            });
+        }
+    };
+
+    const addSequence = () => {
+        const name = newSequenceNameInput.value.trim();
+        if (name && !sequences[name]) {
+            sequences[name] = {
+                keyframes: [],
+                options: {
+                    startFromCurrent: false
+                }
+            };
+            newSequenceNameInput.value = '';
+            currentSequenceName = name;
+            renderSequences();
+            renderKeyframes();
+            keyframesContainer.style.display = 'block';
+            currentSequenceTitle.textContent = `Keyframes for: ${name}`;
+        }
+    };
+
+    const addKeyframe = () => {
+        if (currentSequenceName) {
+            const yaw = viewer.getYaw();
+            const pitch = viewer.getPitch();
+            const hfov = viewer.getHfov();
+            sequences[currentSequenceName].keyframes.push({ yaw, pitch, hfov, duration: 2, ease: "power2.inOut" });
             renderKeyframes();
         }
-    });
+    };
 
-    // Event listener for exporting sequences
-    document.getElementById('export-sequences').addEventListener('click', () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sequences, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "sequences.json");
-        document.body.appendChild(downloadAnchorNode); // required for firefox
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    });
+    const playSequence = () => {
+        if (currentSequenceName && sequences[currentSequenceName].keyframes.length > 0) {
+            const sequence = sequences[currentSequenceName];
+            const timeline = gsap.timeline();
 
-    // Event listener for importing sequences
-    document.getElementById('import-sequences').addEventListener('change', (event) => {
+            let startHfov = viewer.getHfov();
+            let startYaw = viewer.getYaw();
+            let startPitch = viewer.getPitch();
+
+            sequence.keyframes.forEach((kf, index) => {
+                const isFirst = index === 0;
+
+                const animationProps = {
+                    hfov: kf.hfov,
+                    yaw: kf.yaw,
+                    pitch: kf.pitch,
+                    duration: kf.duration,
+                    ease: kf.ease,
+                    onUpdate: () => {
+                        viewer.setHfov(animationProps.hfov, false);
+                        viewer.setYaw(animationProps.yaw, false);
+                        viewer.setPitch(animationProps.pitch, false);
+                    }
+                };
+
+                const fromProps = {
+                    hfov: isFirst ? startHfov : sequence.keyframes[index - 1].hfov,
+                    yaw: isFirst ? startYaw : sequence.keyframes[index - 1].yaw,
+                    pitch: isFirst ? startPitch : sequence.keyframes[index - 1].pitch,
+                };
+
+                timeline.fromTo(fromProps, animationProps, ">");
+            });
+        }
+    };
+
+    const exportSequences = () => {
+        const data = JSON.stringify(sequences, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'panorama-sequences.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const importSequences = (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -70,165 +144,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const importedSequences = JSON.parse(e.target.result);
                     sequences = importedSequences;
+                    currentSequenceName = null;
                     renderSequences();
+                    keyframesContainer.style.display = 'none';
+                    alert('Sequences imported successfully!');
                 } catch (error) {
-                    alert('Error parsing JSON file.');
+                    alert('Error importing sequences: Invalid JSON file.');
                 }
             };
             reader.readAsText(file);
         }
-    });
+    };
 
-    // Event listener for adding a new sequence
-    document.getElementById('add-sequence').addEventListener('click', () => {
-        const sequenceNameInput = document.getElementById('sequence-name-input');
-        const sequenceName = sequenceNameInput.value.trim();
+    // --- Event Listeners ---
+    addSequenceBtn.addEventListener('click', addSequence);
+    addKeyframeBtn.addEventListener('click', addKeyframe);
+    playSequenceBtn.addEventListener('click', playSequence);
+    exportBtn.addEventListener('click', exportSequences);
+    importBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', importSequences);
 
-        if (sequenceName) {
-            const newSequence = {
-                name: sequenceName,
-                keyframes: [],
-                startFromCurrentPosition: false
-            };
-            sequences.push(newSequence);
-            sequenceNameInput.value = '';
-            renderSequences();
-        } else {
-            alert('Please enter a name for the sequence.');
-        }
-    });
-});
-
-function renderSequences() {
-    const sequenceList = document.getElementById('sequence-list');
-    sequenceList.innerHTML = '';
-    sequences.forEach((sequence, index) => {
-        const sequenceElement = document.createElement('div');
-        sequenceElement.innerHTML = `
-            <span>${sequence.name}</span>
-            <button onclick="selectSequence(${index})">Select</button>
-            <button onclick="playSequence(${index})">Play</button>
-            <button onclick="deleteSequence(${index})">Delete</button>
-            <input type="checkbox" onchange="toggleStartFromCurrentPosition(${index})" ${sequence.startFromCurrentPosition ? 'checked' : ''}> Start from current position
-        `;
-        sequenceList.appendChild(sequenceElement);
-    });
-}
-
-function selectSequence(index) {
-    currentSequence = index;
-    document.getElementById('current-sequence-name').textContent = sequences[index].name;
-    document.getElementById('add-keyframe-to-sequence').disabled = false;
-    renderKeyframes();
-}
-
-function deleteSequence(index) {
-    sequences.splice(index, 1);
-    if (currentSequence === index) {
-        currentSequence = null;
-        document.getElementById('current-sequence-name').textContent = '...';
-        document.getElementById('add-keyframe-to-sequence').disabled = true;
-    }
     renderSequences();
-    renderKeyframes();
-}
-
-function playSequence(index) {
-    const sequence = sequences[index];
-
-    if (sequence.keyframes.length === 0) {
-        alert('This sequence has no keyframes.');
-        return;
-    }
-
-    // If not starting from current position and there's only one keyframe, just set the camera position.
-    if (!sequence.startFromCurrentPosition && sequence.keyframes.length < 2) {
-        setCameraState(sequence.keyframes[0]);
-        return;
-    }
-
-    const tl = gsap.timeline({
-        onUpdate: () => setCameraState(cameraState)
-    });
-
-    const keyframesToPlay = [...sequence.keyframes];
-
-    if (sequence.startFromCurrentPosition) {
-        // Create a temporary keyframe for the starting position.
-        // The transition from here to the first saved keyframe will use the first keyframe's properties.
-        const startKeyframe = {
-            ...cameraState,
-            duration: keyframesToPlay[0].duration,
-            ease: keyframesToPlay[0].ease,
-        };
-        keyframesToPlay.unshift(startKeyframe);
-        // Set the GSAP proxy object to the starting state without moving the camera yet.
-        gsap.set(cameraState, { yaw: startKeyframe.yaw, pitch: startKeyframe.pitch, hfov: startKeyframe.hfov });
-    } else {
-        // Set the camera immediately to the first keyframe's position.
-        gsap.set(cameraState, { ...keyframesToPlay[0] });
-        setCameraState(keyframesToPlay[0]);
-    }
-
-    // Build the timeline. The transition from keyframe `i` to `i+1` uses the duration/ease properties from keyframe `i`.
-    // This ensures the properties on the first keyframe are used for the first animation segment.
-    for (let i = 0; i < keyframesToPlay.length - 1; i++) {
-        const startKF = keyframesToPlay[i];
-        const endKF = keyframesToPlay[i + 1];
-
-        tl.to(cameraState, {
-            yaw: endKF.yaw,
-            pitch: endKF.pitch,
-            hfov: endKF.hfov,
-            duration: startKF.duration,
-            ease: startKF.ease,
-        });
-    }
-}
-
-function toggleStartFromCurrentPosition(index) {
-    sequences[index].startFromCurrentPosition = !sequences[index].startFromCurrentPosition;
-}
-
-function renderKeyframes() {
-    const keyframeList = document.getElementById('keyframe-list');
-    keyframeList.innerHTML = '';
-    if (currentSequence !== null) {
-        sequences[currentSequence].keyframes.forEach((keyframe, index) => {
-            const keyframeElement = document.createElement('div');
-            keyframeElement.innerHTML = `
-                <span>
-                    Keyframe ${index + 1}:
-                    Yaw: ${keyframe.yaw.toFixed(1)},
-                    Pitch: ${keyframe.pitch.toFixed(1)},
-                    Zoom: ${keyframe.hfov.toFixed(1)},
-                    Duration: ${keyframe.duration}s,
-                    Ease: ${keyframe.ease}
-                </span>
-                <div>
-                    <button onclick="updateKeyframe(${index})">Update</button>
-                    <button onclick="deleteKeyframe(${index})">Delete</button>
-                </div>
-            `;
-            keyframeList.appendChild(keyframeElement);
-        });
-    }
-}
-
-function deleteKeyframe(index) {
-    if (currentSequence !== null) {
-        sequences[currentSequence].keyframes.splice(index, 1);
-        renderKeyframes();
-    }
-}
-
-function updateKeyframe(index) {
-    if (currentSequence !== null) {
-        // Explicitly get the latest camera state right before updating the keyframe
-        getCameraState();
-        const duration = parseFloat(document.getElementById('keyframe-duration').value);
-        const ease = document.getElementById('keyframe-ease').value;
-        sequences[currentSequence].keyframes[index] = { ...cameraState, duration, ease };
-        renderKeyframes();
-    }
-}
+});

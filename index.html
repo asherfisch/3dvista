@@ -3,59 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>360 Camera Movement Designer</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+    <title>Panorama Camera Movement Designer</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 </head>
 <body>
-    <div id="app-container">
+    <div id="container">
         <div id="panorama"></div>
         <div id="sidebar">
-            <div id="sequence-management">
+            <h1>Camera Movement Designer</h1>
+
+            <div id="sequences-container">
                 <h2>Sequences</h2>
-                <div id="sequence-list">
-                    <!-- Sequences will be listed here -->
-                </div>
-                <div id="new-sequence-controls">
-                    <input type="text" id="sequence-name-input" placeholder="New sequence name">
-                    <button id="add-sequence">Create Sequence</button>
-                </div>
+                <div id="sequences-list"></div>
+                <input type="text" id="new-sequence-name" placeholder="New sequence name">
+                <button id="add-sequence-btn">Add Sequence</button>
             </div>
 
-            <div id="keyframe-management">
-                <h2>Keyframes for <span id="current-sequence-name">...</span></h2>
-                <div id="keyframe-properties">
-                    <div class="keyframe-property">
-                        <label for="keyframe-duration">Duration (s):</label>
-                        <input type="number" id="keyframe-duration" value="2" min="0.1" step="0.1">
-                    </div>
-                    <div class="keyframe-property">
-                        <label for="keyframe-ease">Ease:</label>
-                        <select id="keyframe-ease">
-                            <option value="power1.inOut">power1.inOut</option>
-                            <option value="power2.inOut" selected>power2.inOut</option>
-                            <option value="power3.inOut">power3.inOut</option>
-                            <option value="power4.inOut">power4.inOut</option>
-                            <option value="back.inOut">back.inOut</option>
-                            <option value="elastic.inOut">elastic.inOut</option>
-                            <option value="bounce.inOut">bounce.inOut</option>
-                            <option value="none">none (linear)</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="add-keyframe-to-sequence" disabled>Add Current Position as Keyframe</button>
-                <div id="keyframe-list">
-                    <!-- Keyframes for the selected sequence will be listed here -->
-                </div>
+            <div id="keyframes-container" style="display: none;">
+                <h2 id="current-sequence-title"></h2>
+                <div id="keyframes-list"></div>
+                <button id="add-keyframe-btn">Add Keyframe from Current View</button>
+                <button id="play-sequence-btn">Play Sequence</button>
             </div>
 
-            <div id="io-controls">
-                <button id="export-sequences">Export Sequences</button>
-                <input type="file" id="import-sequences" accept=".json">
+            <div id="io-container">
+                <h2>Import / Export</h2>
+                <button id="export-btn">Export to JSON</button>
+                <button id="import-btn">Import from JSON</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="script.js"></script>
