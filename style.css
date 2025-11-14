@@ -1,59 +1,72 @@
 body {
     font-family: sans-serif;
     margin: 0;
+    height: 100vh;
+    overflow: hidden; /* Prevent body scrolling */
+}
+
+#app-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+#panorama {
+    width: 75vw;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 25vw;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box; /* Include padding in width/height */
+    border-left: 1px solid #ccc;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    overflow-y: auto; /* Allow sidebar to scroll if content overflows */
 }
 
-#keyframe-management {
-    width: 80vw;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-}
-
-#sequence-list, #keyframe-list {
-    margin-bottom: 10px;
+#sequence-management, #keyframe-management, #io-controls {
+    margin-bottom: 20px;
 }
 
 #keyframe-properties {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     margin-bottom: 10px;
 }
 
 .keyframe-property {
     display: flex;
     flex-direction: column;
+    width: 48%; /* Adjust width to fit side-by-side */
+}
+
+#add-keyframe-to-sequence {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+#sequence-list, #keyframe-list {
+    border: 1px solid #eee;
+    padding: 10px;
+    min-height: 50px;
+    background-color: #f9f9f9;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+input[type="text"], input[type="number"], select, button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
 }
 
 #io-controls {
-    margin-top: 20px;
-}
-
-#panorama {
-    width: 80vw;
-    height: 60vh;
-    border: 1px solid black;
-}
-
-#controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80vw;
-    margin-top: 20px;
-}
-
-#controls-container {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-}
-
-.control-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-top: auto; /* Push to the bottom */
 }

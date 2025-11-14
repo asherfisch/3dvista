@@ -35,24 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Update the cameraState object whenever the view changes
-    viewer.on('mouseup', () => {
-        getCameraState();
-        updateUI();
-    });
-    viewer.on('touchend', () => {
-        getCameraState();
-        updateUI();
-    });
-
-    // Event listeners for sliders
-    document.getElementById('hfov-slider').addEventListener('input', (e) => {
-        cameraState.hfov = parseFloat(e.target.value);
-        setCameraState(cameraState);
-    });
+    viewer.on('mouseup', getCameraState);
+    viewer.on('touchend', getCameraState);
 
     // Event listener for adding a keyframe to the current sequence
     document.getElementById('add-keyframe-to-sequence').addEventListener('click', () => {
         if (currentSequence !== null) {
+            // Explicitly get the latest camera state right before creating the keyframe
+            getCameraState();
             const duration = parseFloat(document.getElementById('keyframe-duration').value);
             const ease = document.getElementById('keyframe-ease').value;
             sequences[currentSequence].keyframes.push({ ...cameraState, duration, ease });
@@ -234,14 +224,11 @@ function deleteKeyframe(index) {
 
 function updateKeyframe(index) {
     if (currentSequence !== null) {
+        // Explicitly get the latest camera state right before updating the keyframe
+        getCameraState();
         const duration = parseFloat(document.getElementById('keyframe-duration').value);
         const ease = document.getElementById('keyframe-ease').value;
         sequences[currentSequence].keyframes[index] = { ...cameraState, duration, ease };
         renderKeyframes();
     }
-}
-
-function updateUI() {
-    document.getElementById('hfov-slider').value = cameraState.hfov;
-    document.getElementById('hfov-value').textContent = cameraState.hfov.toFixed(1);
 }

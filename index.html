@@ -8,57 +8,51 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="panorama"></div>
+    <div id="app-container">
+        <div id="panorama"></div>
+        <div id="sidebar">
+            <div id="sequence-management">
+                <h2>Sequences</h2>
+                <div id="sequence-list">
+                    <!-- Sequences will be listed here -->
+                </div>
+                <div id="new-sequence-controls">
+                    <input type="text" id="sequence-name-input" placeholder="New sequence name">
+                    <button id="add-sequence">Create Sequence</button>
+                </div>
+            </div>
 
-    <div id="keyframe-management">
-        <div id="keyframe-properties">
-            <div class="keyframe-property">
-                <label for="keyframe-duration">Duration (s):</label>
-                <input type="number" id="keyframe-duration" value="2" min="0.1" step="0.1">
+            <div id="keyframe-management">
+                <h2>Keyframes for <span id="current-sequence-name">...</span></h2>
+                <div id="keyframe-properties">
+                    <div class="keyframe-property">
+                        <label for="keyframe-duration">Duration (s):</label>
+                        <input type="number" id="keyframe-duration" value="2" min="0.1" step="0.1">
+                    </div>
+                    <div class="keyframe-property">
+                        <label for="keyframe-ease">Ease:</label>
+                        <select id="keyframe-ease">
+                            <option value="power1.inOut">power1.inOut</option>
+                            <option value="power2.inOut" selected>power2.inOut</option>
+                            <option value="power3.inOut">power3.inOut</option>
+                            <option value="power4.inOut">power4.inOut</option>
+                            <option value="back.inOut">back.inOut</option>
+                            <option value="elastic.inOut">elastic.inOut</option>
+                            <option value="bounce.inOut">bounce.inOut</option>
+                            <option value="none">none (linear)</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="add-keyframe-to-sequence" disabled>Add Current Position as Keyframe</button>
+                <div id="keyframe-list">
+                    <!-- Keyframes for the selected sequence will be listed here -->
+                </div>
             </div>
-            <div class="keyframe-property">
-                <label for="keyframe-ease">Ease:</label>
-                <select id="keyframe-ease">
-                    <option value="power1.inOut">power1.inOut</option>
-                    <option value="power2.inOut" selected>power2.inOut</option>
-                    <option value="power3.inOut">power3.inOut</option>
-                    <option value="power4.inOut">power4.inOut</option>
-                    <option value="back.inOut">back.inOut</option>
-                    <option value="elastic.inOut">elastic.inOut</option>
-                    <option value="bounce.inOut">bounce.inOut</option>
-                    <option value="none">none (linear)</option>
-                </select>
-            </div>
-        </div>
-        <button id="add-keyframe-to-sequence" disabled>Add Current Position as Keyframe</button>
 
-        <h2>Keyframes for <span id="current-sequence-name">...</span></h2>
-        <div id="keyframe-list">
-            <!-- Keyframes for the selected sequence will be listed here -->
-        </div>
-    </div>
-
-    <div id="controls">
-        <div id="controls-container">
-            <div class="control-group">
-                <label for="hfov-slider">Zoom: <span id="hfov-value">100</span></label>
-                <input type="range" id="hfov-slider" min="50" max="150" value="100" step="1">
+            <div id="io-controls">
+                <button id="export-sequences">Export Sequences</button>
+                <input type="file" id="import-sequences" accept=".json">
             </div>
-        </div>
-        <div id="sequence-management">
-            <h2>Sequences</h2>
-            <div id="sequence-list">
-                <!-- Sequences will be listed here -->
-            </div>
-            <div id="new-sequence-controls">
-                <input type="text" id="sequence-name-input" placeholder="New sequence name">
-                <button id="add-sequence">Create New Sequence</button>
-            </div>
-        </div>
-
-        <div id="io-controls">
-            <button id="export-sequences">Export Sequences</button>
-            <input type="file" id="import-sequences" accept=".json">
         </div>
     </div>
 
