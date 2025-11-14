@@ -64,3 +64,27 @@ button {
 button:hover {
     background-color: #45a049;
 }
+
+.keyframe-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.keyframe-item div:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.keyframe-item label {
+    margin-bottom: 5px;
+}
+
+.keyframe-item input {
+    width: 100px;
+}
+
+.keyframe-buttons button {
+    margin-left: 5px;
+    width: auto; /* Override the 100% width for these buttons */
+    padding: 5px 10px;
+}
