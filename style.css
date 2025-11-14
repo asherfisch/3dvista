@@ -17,6 +17,17 @@ body {
     margin-bottom: 10px;
 }
 
+#keyframe-properties {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.keyframe-property {
+    display: flex;
+    flex-direction: column;
+}
+
 #io-controls {
     margin-top: 20px;
 }

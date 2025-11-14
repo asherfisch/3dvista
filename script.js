@@ -59,7 +59,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listener for adding a keyframe to the current sequence
     document.getElementById('add-keyframe-to-sequence').addEventListener('click', () => {
         if (currentSequence !== null) {
-            sequences[currentSequence].keyframes.push({ ...cameraState });
+            const duration = parseFloat(document.getElementById('keyframe-duration').value);
+            const ease = document.getElementById('keyframe-ease').value;
+            sequences[currentSequence].keyframes.push({ ...cameraState, duration, ease });
             renderKeyframes();
         }
     });
@@ -149,8 +151,15 @@ function deleteSequence(index) {
 
 function playSequence(index) {
     const sequence = sequences[index];
-    if (sequence.keyframes.length < 2) {
-        alert('Please add at least two keyframes to this sequence.');
+
+    if (sequence.keyframes.length === 0) {
+        alert('This sequence has no keyframes.');
+        return;
+    }
+
+    // If not starting from current position and there's only one keyframe, just set the camera position.
+    if (!sequence.startFromCurrentPosition && sequence.keyframes.length < 2) {
+        setCameraState(sequence.keyframes[0]);
         return;
     }
 
@@ -159,27 +168,38 @@ function playSequence(index) {
     });
 
     const keyframesToPlay = [...sequence.keyframes];
+
     if (sequence.startFromCurrentPosition) {
-        keyframesToPlay.unshift({ ...cameraState });
+        // Create a temporary keyframe for the starting position.
+        // The transition from here to the first saved keyframe will use the first keyframe's properties.
+        const startKeyframe = {
+            ...cameraState,
+            duration: keyframesToPlay[0].duration,
+            ease: keyframesToPlay[0].ease,
+        };
+        keyframesToPlay.unshift(startKeyframe);
+        // Set the GSAP proxy object to the starting state without moving the camera yet.
+        gsap.set(cameraState, { yaw: startKeyframe.yaw, pitch: startKeyframe.pitch, hfov: startKeyframe.hfov });
+    } else {
+        // Set the camera immediately to the first keyframe's position.
+        gsap.set(cameraState, { ...keyframesToPlay[0] });
+        setCameraState(keyframesToPlay[0]);
     }
 
-    keyframesToPlay.forEach((keyframe, i) => {
-        if (i === 0) {
-            gsap.set(cameraState, {
-                yaw: keyframe.yaw,
-                pitch: keyframe.pitch,
-                hfov: keyframe.hfov
-            });
-        } else {
-            tl.to(cameraState, {
-                yaw: keyframe.yaw,
-                pitch: keyframe.pitch,
-                hfov: keyframe.hfov,
-                duration: 2,
-                ease: "power2.inOut"
-            });
-        }
-    });
+    // Build the timeline. The transition from keyframe `i` to `i+1` uses the duration/ease properties from keyframe `i`.
+    // This ensures the properties on the first keyframe are used for the first animation segment.
+    for (let i = 0; i < keyframesToPlay.length - 1; i++) {
+        const startKF = keyframesToPlay[i];
+        const endKF = keyframesToPlay[i + 1];
+
+        tl.to(cameraState, {
+            yaw: endKF.yaw,
+            pitch: endKF.pitch,
+            hfov: endKF.hfov,
+            duration: startKF.duration,
+            ease: startKF.ease,
+        });
+    }
 }
 
 function toggleStartFromCurrentPosition(index) {
@@ -193,7 +213,14 @@ function renderKeyframes() {
         sequences[currentSequence].keyframes.forEach((keyframe, index) => {
             const keyframeElement = document.createElement('div');
             keyframeElement.innerHTML = `
-                <span>Keyframe ${index + 1}: Yaw: ${keyframe.yaw.toFixed(1)}, Pitch: ${keyframe.pitch.toFixed(1)}, Zoom: ${keyframe.hfov.toFixed(1)}</span>
+                <span>
+                    Keyframe ${index + 1}:
+                    Yaw: ${keyframe.yaw.toFixed(1)},
+                    Pitch: ${keyframe.pitch.toFixed(1)},
+                    Zoom: ${keyframe.hfov.toFixed(1)},
+                    Duration: ${keyframe.duration}s,
+                    Ease: ${keyframe.ease}
+                </span>
                 <button onclick="deleteKeyframe(${index})">Delete</button>
             `;
             keyframeList.appendChild(keyframeElement);

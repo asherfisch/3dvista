@@ -40,6 +40,25 @@
             <div id="keyframe-list">
                 <!-- Keyframes for the selected sequence will be listed here -->
             </div>
+            <div id="keyframe-properties">
+                <div class="keyframe-property">
+                    <label for="keyframe-duration">Duration (s):</label>
+                    <input type="number" id="keyframe-duration" value="2" min="0.1" step="0.1">
+                </div>
+                <div class="keyframe-property">
+                    <label for="keyframe-ease">Ease:</label>
+                    <select id="keyframe-ease">
+                        <option value="power1.inOut">power1.inOut</option>
+                        <option value="power2.inOut" selected>power2.inOut</option>
+                        <option value="power3.inOut">power3.inOut</option>
+                        <option value="power4.inOut">power4.inOut</option>
+                        <option value="back.inOut">back.inOut</option>
+                        <option value="elastic.inOut">elastic.inOut</option>
+                        <option value="bounce.inOut">bounce.inOut</option>
+                        <option value="none">none (linear)</option>
+                    </select>
+                </div>
+            </div>
             <button id="add-keyframe-to-sequence" disabled>Add Current Position as Keyframe</button>
         </div>
 
