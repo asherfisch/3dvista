@@ -26,8 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('export-btn');
     const importBtn = document.getElementById('import-btn');
     const importFileInput = document.getElementById('import-file');
+    const coordsDisplay = document.getElementById('camera-coords-display');
 
     // --- Functions ---
+    const updateCoordsDisplay = () => {
+        const yaw = viewer.getYaw().toFixed(2);
+        const pitch = viewer.getPitch().toFixed(2);
+        const hfov = viewer.getHfov().toFixed(2);
+        coordsDisplay.textContent = `Yaw: ${yaw}° / Pitch: ${pitch}° / Zoom: ${hfov}°`;
+    };
+
     const renderSequences = () => {
         sequencesList.innerHTML = '';
         for (const name in sequences) {
@@ -80,8 +88,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label>Pitch: <input type="number" class="kf-pitch" value="${kf.pitch.toFixed(2)}" step="0.1"></label>
                     <label>Zoom: <input type="number" class="kf-hfov" value="${kf.hfov.toFixed(2)}" step="0.1"></label>
                     <label>Duration: <input type="number" class="kf-duration" value="${kf.duration}" step="0.1"></label>
-                    <label>Ease: <input type="text" class="kf-ease" value="${kf.ease}"></label>
+                    <label>Ease:
+                        <select class="kf-ease">
+                            <option value="none">Linear</option>
+                            <option value="power1.inOut">Slow</option>
+                            <option value="power2.inOut">Medium</option>
+                            <option value="power3.inOut">Fast</option>
+                            <option value="back.out(1.7)">Back</option>
+                            <option value="elastic.out(1, 0.3)">Elastic</option>
+                            <option value="bounce.out">Bounce</option>
+                        </select>
+                    </label>
                 `;
+
+                kfEl.appendChild(kfInfo);
+
+                // Set the selected option for the dropdown
+                const easeSelect = kfEl.querySelector('.kf-ease');
+                easeSelect.value = kf.ease;
 
                 const saveBtn = document.createElement('button');
                 saveBtn.textContent = 'Save';
@@ -147,54 +171,72 @@ document.addEventListener('DOMContentLoaded', () => {
             const yaw = viewer.getYaw();
             const pitch = viewer.getPitch();
             const hfov = viewer.getHfov();
-            sequences[currentSequenceName].keyframes.push({ yaw, pitch, hfov, duration: 2, ease: "power2.inOut" });
+            sequences[currentSequenceName].keyframes.push({ yaw, pitch, hfov, duration: 2, ease: "power1.inOut" });
             renderKeyframes();
         }
         updatePlayButtonState();
     };
 
     const playSequence = () => {
-        if (currentSequenceName && sequences[currentSequenceName].keyframes.length > 0) {
-            const sequence = sequences[currentSequenceName];
-            const timeline = gsap.timeline();
+        if (!currentSequenceName || !sequences[currentSequenceName]) return;
 
-            const cameraState = {
-                yaw: viewer.getYaw(),
-                pitch: viewer.getPitch(),
-                hfov: viewer.getHfov()
-            };
+        const sequence = sequences[currentSequenceName];
+        const keyframes = sequence.keyframes;
+        const options = sequence.options;
+        const keyframesCount = keyframes.length;
 
-            // Set the initial state of the animation
-            if (!sequence.options.startFromCurrent) {
-                const firstKf = sequence.keyframes[0];
-                if (firstKf) {
-                    cameraState.yaw = firstKf.yaw;
-                    cameraState.pitch = firstKf.pitch;
-                    cameraState.hfov = firstKf.hfov;
-                }
-            }
-
-            viewer.setYaw(cameraState.yaw, false);
-            viewer.setPitch(cameraState.pitch, false);
-            viewer.setHfov(cameraState.hfov, false);
-
-            const keyframesToPlay = sequence.options.startFromCurrent ? sequence.keyframes : sequence.keyframes.slice(1);
-
-            keyframesToPlay.forEach(kf => {
-                timeline.to(cameraState, {
-                    yaw: kf.yaw,
-                    pitch: kf.pitch,
-                    hfov: kf.hfov,
-                    duration: kf.duration,
-                    ease: kf.ease,
-                    onUpdate: () => {
-                        viewer.setYaw(cameraState.yaw, false);
-                        viewer.setPitch(cameraState.pitch, false);
-                        viewer.setHfov(cameraState.hfov, false);
-                    }
-                });
-            });
+        if (keyframesCount === 0) {
+            return;
         }
+
+        const timeline = gsap.timeline();
+
+        let startState = {
+            yaw: viewer.getYaw(),
+            pitch: viewer.getPitch(),
+            hfov: viewer.getHfov()
+        };
+
+        let keyframesToAnimate;
+
+        if (options.startFromCurrent) {
+            keyframesToAnimate = keyframes;
+        } else {
+            // If not starting from current, the first keyframe is the start state.
+            // The animation is from the first keyframe to the rest.
+            // So we need at least 2 keyframes.
+            if (keyframesCount < 2) {
+                return;
+            }
+            const firstKf = keyframes[0];
+            startState.yaw = firstKf.yaw;
+            startState.pitch = firstKf.pitch;
+            startState.hfov = firstKf.hfov;
+            keyframesToAnimate = keyframes.slice(1);
+        }
+
+        // Set viewer to the starting position of the animation
+        viewer.setYaw(startState.yaw, false);
+        viewer.setPitch(startState.pitch, false);
+        viewer.setHfov(startState.hfov, false);
+
+        // This object will be tweened by GSAP
+        let animatedState = {...startState};
+
+        keyframesToAnimate.forEach(kf => {
+            timeline.to(animatedState, {
+                yaw: kf.yaw,
+                pitch: kf.pitch,
+                hfov: kf.hfov,
+                duration: kf.duration,
+                ease: kf.ease,
+                onUpdate: () => {
+                    viewer.setYaw(animatedState.yaw, false);
+                    viewer.setPitch(animatedState.pitch, false);
+                    viewer.setHfov(animatedState.hfov, false);
+                }
+            });
+        });
     };
 
     const updatePlayButtonState = () => {
@@ -255,7 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
     exportBtn.addEventListener('click', exportSequences);
     importBtn.addEventListener('click', () => importFileInput.click());
     importFileInput.addEventListener('change', importSequences);
+    viewer.on('viewchange', updateCoordsDisplay);
 
     renderSequences();
     updatePlayButtonState();
+    updateCoordsDisplay(); // Initial call
 });
