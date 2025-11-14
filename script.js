@@ -41,16 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Event listeners for sliders
-    document.getElementById('yaw-slider').addEventListener('input', (e) => {
-        cameraState.yaw = parseFloat(e.target.value);
-        setCameraState(cameraState);
-    });
-
-    document.getElementById('pitch-slider').addEventListener('input', (e) => {
-        cameraState.pitch = parseFloat(e.target.value);
-        setCameraState(cameraState);
-    });
-
     document.getElementById('hfov-slider').addEventListener('input', (e) => {
         cameraState.hfov = parseFloat(e.target.value);
         setCameraState(cameraState);
@@ -221,7 +211,10 @@ function renderKeyframes() {
                     Duration: ${keyframe.duration}s,
                     Ease: ${keyframe.ease}
                 </span>
-                <button onclick="deleteKeyframe(${index})">Delete</button>
+                <div>
+                    <button onclick="updateKeyframe(${index})">Update</button>
+                    <button onclick="deleteKeyframe(${index})">Delete</button>
+                </div>
             `;
             keyframeList.appendChild(keyframeElement);
         });
@@ -235,11 +228,16 @@ function deleteKeyframe(index) {
     }
 }
 
+function updateKeyframe(index) {
+    if (currentSequence !== null) {
+        const duration = parseFloat(document.getElementById('keyframe-duration').value);
+        const ease = document.getElementById('keyframe-ease').value;
+        sequences[currentSequence].keyframes[index] = { ...cameraState, duration, ease };
+        renderKeyframes();
+    }
+}
+
 function updateUI() {
-    document.getElementById('yaw-slider').value = cameraState.yaw;
-    document.getElementById('yaw-value').textContent = cameraState.yaw.toFixed(1);
-    document.getElementById('pitch-slider').value = cameraState.pitch;
-    document.getElementById('pitch-value').textContent = cameraState.pitch.toFixed(1);
     document.getElementById('hfov-slider').value = cameraState.hfov;
     document.getElementById('hfov-value').textContent = cameraState.hfov.toFixed(1);
 }
