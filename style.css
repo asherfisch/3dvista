@@ -1,0 +1,104 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+#container {
+    display: flex;
+    height: 100vh;
+}
+
+#panorama {
+    width: 75vw;
+    height: 100vh;
+    position: relative;
+}
+
+#camera-coords-display {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none; /* Make it non-interactive */
+}
+
+#sidebar {
+    width: 25vw;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f0f0f0;
+}
+
+#sidebar h1, #sidebar h2 {
+    margin-top: 0;
+}
+
+#sequences-container, #keyframes-container {
+    margin-bottom: 20px;
+}
+
+.sequence-item {
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    background-color: #fff;
+}
+
+.sequence-item.selected {
+    background-color: #d0e3ff;
+}
+
+#new-sequence-name {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.keyframe-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.keyframe-item div:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.keyframe-item label {
+    margin-bottom: 5px;
+}
+
+.keyframe-item input, .keyframe-item select {
+    width: 100px;
+}
+
+.keyframe-buttons button {
+    margin-left: 5px;
+    width: auto; /* Override the 100% width for these buttons */
+    padding: 5px 10px;
+}

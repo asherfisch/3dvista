@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panorama Camera Movement Designer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pannellum.css">
+</head>
+<body>
+    <div id="container">
+        <div id="panorama">
+            <div id="camera-coords-display"></div>
+        </div>
+        <div id="sidebar">
+            <h1>Camera Movement Designer</h1>
+
+            <div id="sequences-container">
+                <h2>Sequences</h2>
+                <div id="sequences-list"></div>
+                <input type="text" id="new-sequence-name" placeholder="New sequence name">
+                <button id="add-sequence-btn">Add Sequence</button>
+            </div>
+
+            <div id="keyframes-container" style="display: none;">
+                <h2 id="current-sequence-title"></h2>
+                <div id="keyframes-list"></div>
+                <button id="add-keyframe-btn">Add Keyframe from Current View</button>
+                <button id="play-sequence-btn">Play Sequence</button>
+            </div>
+
+            <div id="io-container">
+                <h2>Import / Export</h2>
+                <button id="export-btn">Export to JSON</button>
+                <button id="import-btn">Import from JSON</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+    <script src="pannellum.js"></script>
+    <script src="gsap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
